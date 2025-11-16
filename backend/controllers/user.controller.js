@@ -17,3 +17,23 @@ export const createUserController = async (req, res) => {
      res.status(400).send(error.message);
   }
 };
+
+
+export const loginController= async(req, res)=>{
+  const errors=validationResult(req);
+
+if(!errors.isEmpty()){
+  return res.status(400).json({errors:errors.array()})
+}
+
+try{
+  const {email,password}=req.body;
+  const user =await userModel.findOne({email});
+  if (!user){
+    throw new  Error('Unable to Login')
+  }
+}catch(err){
+  res.status(400).send(err.message);
+}
+
+};
