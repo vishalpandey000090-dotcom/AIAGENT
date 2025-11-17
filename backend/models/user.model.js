@@ -33,7 +33,7 @@ userSchema.methods.generateJWT = function () {
       email: this.email
     },
     process.env.JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "24h" }
   );
 };
 
