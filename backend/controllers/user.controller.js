@@ -1,7 +1,8 @@
 import userModel from '../models/user.model.js';
 import * as userService from '../services/user.service.js';
 import { validationResult } from 'express-validator';
-
+import jwt from "jsonwebtoken";
+import redisclient from '../services/redis.service.js';
 export const createUserController = async (req, res) => {
     
   const errors = validationResult(req);
@@ -19,21 +20,61 @@ export const createUserController = async (req, res) => {
 };
 
 
-export const loginController= async(req, res)=>{
-  const errors=validationResult(req);
 
-if(!errors.isEmpty()){
-  return res.status(400).json({errors:errors.array()})
-}
-
-try{
-  const {email,password}=req.body;
-  const user =await userModel.findOne({email});
-  if (!user){
-    throw new  Error('Unable to Login')
+export const loginController = async (req, res) => {
+  // Validate Request
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
   }
-}catch(err){
-  res.status(400).send(err.message);
-}
 
+  try {
+    const { email, password } = req.body;
+
+    // Find user + include password
+    const user = await userModel.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(401).json({ errors: "Invalid credentials" });
+    }
+
+    // Check password
+    const isMatch = await user.isvalidpassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ errors: "Invalid credentials" });
+    }
+
+    // Generate token (with ID + email)
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email
+      },
+      process.env.JWT_SECRET,   // 🔥 SAME SECRET used in middleware
+      { expiresIn: "1d" }
+    );
+
+    // Remove password before sending user object
+    const cleanUser = user.toObject();
+    delete cleanUser.password;
+
+    return res.status(200).json({
+      message: "Login successful",
+      user: cleanUser,
+      token
+    });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: "Server error", details: err.message });
+  }
+};
+
+
+export const profileController=async(req,res)=>{
+console.log(req.user);
+res.status(200).json(
+  {
+   user:req.user 
+  })
 };
