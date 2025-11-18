@@ -5,7 +5,7 @@ import axios from "../config/axios";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");   // <-- show backend errors
+  const [error, setError] = useState("");   
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -15,18 +15,23 @@ const Register = () => {
     setError("");
     setLoading(true);
 
+    console.log("🟢 SUBMIT CLICKED"); // 🟢 ADDED
+    console.log("🟢 Sending data:", { email, password }); // 🟢 ADDED
+
     try {
-      const res = await axios.post("/register", {
+      const res = await axios.post("/users/register", {
         email,
         password,
       });
 
-      console.log(res.data);
+      console.log("🟢 Backend Response:", res.data); // 🟢 ADDED
+
       navigate("/");
     } catch (err) {
-      console.log(err.response?.data);
+      console.log("🟢 Backend Error:", err.response?.data); // 🟢 ADDED
       setError(err.response?.data?.msg || "Registration failed");
     } finally {
+      console.log("🟢 Finally Block Triggered"); // 🟢 ADDED
       setLoading(false);
     }
   }
@@ -37,7 +42,6 @@ const Register = () => {
 
         <h2 className="text-2xl font-bold text-white mb-6">Create Account</h2>
 
-        {/* Show error */}
         {error && (
           <p className="mb-4 text-red-400 bg-red-900/40 p-2 rounded">
             {error}
@@ -50,7 +54,10 @@ const Register = () => {
               Email
             </label>
             <input
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                console.log("🟢 Email changed:", e.target.value); // 🟢 ADDED
+                setEmail(e.target.value);
+              }}
               type="email"
               id="email"
               className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -63,7 +70,10 @@ const Register = () => {
               Password
             </label>
             <input
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                console.log("🟢 Password changed:", e.target.value); // 🟢 ADDED
+                setPassword(e.target.value);
+              }}
               type="password"
               id="password"
               className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -95,4 +105,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Register;

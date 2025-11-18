@@ -8,8 +8,10 @@ const router = Router();
 router.post(
   "/register",
   [
-    body("email").isEmail().withMessage("Email must be valid email address"),
-    body("password").isLength({ min: 3 }).withMessage("Password must be at least 3 characters long"),
+    body("email").isEmail().withMessage("Email must be a valid address"),
+    body("password")
+      .isLength({ min: 3 })
+      .withMessage("Password must be at least 3 characters long"),
   ],
   userController.createUserController
 );
@@ -18,15 +20,15 @@ router.post(
   "/login",
   [
     body("email").isEmail().withMessage("Email must be valid"),
-    body("password").isLength({ min: 3 }).withMessage("Password must be at least 3 characters long"),
+    body("password")
+      .isLength({ min: 3 })
+      .withMessage("Password must be at least 3 characters long"),
   ],
   userController.loginController
 );
 
 router.get("/profile", authMiddleware.authuser, userController.profileController);
 
-router.get("/logout",authMiddleware.authuser, userController.logoutcontroller);
-
-
+router.get("/logout", authMiddleware.authuser, userController.logoutcontroller);
 
 export default router;
