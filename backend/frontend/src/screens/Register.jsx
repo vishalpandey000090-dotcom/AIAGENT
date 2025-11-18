@@ -1,45 +1,98 @@
-// Register.jsx (simple companion page referenced by the "Create one" link)
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "../config/axios";
 
-export default function Register() {
+const Register = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");   // <-- show backend errors
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => setForm((s) => ({ ...s, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async (e) => {
+  async function submitHandler(e) {
     e.preventDefault();
-    // basic validation
-    if (!form.email || !form.password) return setErrors({ submit: "All fields are required" });
-    // TODO: call real register API
-    await new Promise((r) => setTimeout(r, 700));
-    navigate("/login");
-  };
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await axios.post("/register", {
+        email,
+        password,
+      });
+
+      console.log(res.data);
+      navigate("/");
+    } catch (err) {
+      console.log(err.response?.data);
+      setError(err.response?.data?.msg || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-gray-800 p-8 rounded-2xl shadow-lg">
-          <h2 className="text-2xl text-white font-semibold mb-2">Create account</h2>
-          <p className="text-sm text-gray-300 mb-6">Register to get started</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
 
-          {errors.submit && <div className="text-red-300 mb-3">{errors.submit}</div>}
+        <h2 className="text-2xl font-bold text-white mb-6">Create Account</h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input name="email" placeholder="Email" value={form.email} onChange={handleChange}
-              className="w-full rounded-md bg-gray-900/60 border border-gray-700 px-3 py-2 text-white" />
-            <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange}
-              className="w-full rounded-md bg-gray-900/60 border border-gray-700 px-3 py-2 text-white" />
-            <button className="w-full py-2 rounded-md bg-indigo-500 text-white">Create account</button>
-          </form>
+        {/* Show error */}
+        {error && (
+          <p className="mb-4 text-red-400 bg-red-900/40 p-2 rounded">
+            {error}
+          </p>
+        )}
 
-          <div className="mt-4 text-sm text-gray-300">
-            Already have an account? <Link to="/login" className="text-indigo-300 underline">Sign in</Link>
+        <form onSubmit={submitHandler}>
+          <div className="mb-4">
+            <label className="block text-gray-400 mb-2" htmlFor="email">
+              Email
+            </label>
+            <input
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              id="email"
+              className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
           </div>
-        </div>
+
+          <div className="mb-6">
+            <label className="block text-gray-400 mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              id="password"
+              className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full text-white p-2 rounded transition duration-200 ${
+              loading 
+                ? "bg-blue-400 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
+          >
+            {loading ? "Registering..." : "Register"}
+          </button>
+        </form>
+
+        <p className="text-gray-400 mt-4">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-500 hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default Register;
