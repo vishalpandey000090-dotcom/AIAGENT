@@ -5,7 +5,7 @@ import axios from "../config/axios";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");   
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -15,23 +15,23 @@ const Register = () => {
     setError("");
     setLoading(true);
 
-    console.log("🟢 SUBMIT CLICKED"); // 🟢 ADDED
-    console.log("🟢 Sending data:", { email, password }); // 🟢 ADDED
-
     try {
       const res = await axios.post("/users/register", {
         email,
         password,
       });
 
-      console.log("🟢 Backend Response:", res.data); // 🟢 ADDED
+      console.log("Response:", res.data);
 
-      navigate("/");
+      // TOKEN SAVE
+      localStorage.setItem("token", res.data.token);
+
+      // Redirect to login OR home
+      navigate("/login");
     } catch (err) {
-      console.log("🟢 Backend Error:", err.response?.data); // 🟢 ADDED
+      console.log("Backend Error:", err.response?.data);
       setError(err.response?.data?.msg || "Registration failed");
     } finally {
-      console.log("🟢 Finally Block Triggered"); // 🟢 ADDED
       setLoading(false);
     }
   }
@@ -54,10 +54,7 @@ const Register = () => {
               Email
             </label>
             <input
-              onChange={(e) => {
-                console.log("🟢 Email changed:", e.target.value); // 🟢 ADDED
-                setEmail(e.target.value);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               type="email"
               id="email"
               className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -70,10 +67,7 @@ const Register = () => {
               Password
             </label>
             <input
-              onChange={(e) => {
-                console.log("🟢 Password changed:", e.target.value); // 🟢 ADDED
-                setPassword(e.target.value);
-              }}
+              onChange={(e) => setPassword(e.target.value)}
               type="password"
               id="password"
               className="w-full p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -85,7 +79,7 @@ const Register = () => {
             type="submit"
             disabled={loading}
             className={`w-full text-white p-2 rounded transition duration-200 ${
-              loading 
+              loading
                 ? "bg-blue-400 cursor-not-allowed"
                 : "bg-blue-500 hover:bg-blue-600"
             }`}
@@ -105,4 +99,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Register;

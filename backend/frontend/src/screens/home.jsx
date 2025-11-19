@@ -1,9 +1,14 @@
 import React, { useContext } from 'react';
-import { UserContext } from '../context/user.context'
-import { json } from 'express';
+import { UserContext } from '../context/user.context';
 
 const Home = () => {
- const {user}= UserContext(UserContext)
-  return <div>{JSON.stringfy(user)}</div>;
-}
+  const { user } = useContext(UserContext);
+
+  return (
+    <div>
+      {JSON.stringify(user)}
+    </div>
+  );
+};
+
 export default Home;
