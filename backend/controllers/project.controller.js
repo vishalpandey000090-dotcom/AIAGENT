@@ -1,35 +1,34 @@
-import jwt from "jsonwebtoken";
-import redisclient from "../services/redis.service.js";
+import projectModel from '../models/project.model.js'
+import * as projectService from '../services/project.service.js'
+import { validationResult } from 'express-validator';
+import userModel from '../models/user.model.js'
 
-export const authuser = async (req, res, next) => {
+export const createProject = async (req, res) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   try {
-    const authHeader = req.headers.authorization;
+    const { name } = req.body;
 
-    if (!authHeader) {
-      return res.status(401).json({ message: "No token provided" });
+    // Find user using decoded token email
+    const loggedInUser = await userModel.findOne({ email: req.user.email });
+
+    if (!loggedInUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    const parts = authHeader.trim().split(" ");
-    if (parts.length !== 2 || parts[0] !== "Bearer") {
-      return res.status(401).json({ message: "Invalid token format" });
-    }
+    // Correct: user ID
+    const user = loggedInUser._id;
 
-    const token = parts[1].trim();
+    // Correct variable passed to service
+    const newProject = await projectService.createProject({ name, user });
 
-    const isBlackListed = await redisclient.get(token);
-    if (isBlackListed) {
-      return res.status(401).json({ error: "Unauthorized user" });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // THE FIX
-    req.user = {
-      id: decoded.id || decoded._id,
-    };
-
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Token invalid or expired" });
+    res.status(201).json(newProject);
+  } catch (err) {
+    console.log(err);
+    res.status(400).send(err.message);
   }
 };
