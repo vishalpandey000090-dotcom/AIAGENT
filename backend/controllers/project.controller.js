@@ -13,18 +13,21 @@ export const createProject = async (req, res) => {
   try {
     const { name } = req.body;
 
-    // Find user using decoded token email
+    // Find user from token
     const loggedInUser = await userModel.findOne({ email: req.user.email });
 
     if (!loggedInUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Correct: user ID
-    const user = loggedInUser._id;
+    // User ID
+    const userId = loggedInUser._id;
 
-    // Correct variable passed to service
-    const newProject = await projectService.createProject({ name, user });
+    // IMPORTANT CHANGE: users ARRAY pass karna hai
+    const newProject = await projectService.createProject({
+      name,
+      users: [userId], // <-- FIXED (array required)
+    });
 
     res.status(201).json(newProject);
   } catch (err) {

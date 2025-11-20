@@ -5,10 +5,12 @@ const Home = () => {
   const { user } = useContext(UserContext);
 
   return (
-    <div>
-      <h1>Home Page</h1>
-      <pre>{JSON.stringify(user, null, 2)}</pre>
-    </div>
+    <main className='p-4'>
+      <div className='project'>
+        <div className="project"></div>
+      </div>
+
+    </main>
   );
 };
 
