@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../screens/Login";
 import Register from "../screens/Register";
 
-import Home from "../screens/Home"; // uncomment if you have Home?
+import Home from "../screens/home"; // import using the correct filename casing
 
 const AppRoutes = () => {
   return (
