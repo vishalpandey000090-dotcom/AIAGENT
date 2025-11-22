@@ -21,24 +21,37 @@ export const authuser = async (req, res, next) => {
       return res.status(401).json({ message: "Token missing" });
     }
 
-    // Check blacklist
-    const isBlackListed = await redisclient.get(token);
-    if (isBlackListed) {
-      return res.status(401).json({ error: "Unauthorized user" });
+    // -------------------------
+    // CHECK IF TOKEN IS REVOKED
+    // -------------------------
+    const isRevoked = await redisclient.get(token);
+    if (isRevoked) {
+      return res.status(401).json({
+        message: "jwt revoked"
+      });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // -------------------------
+    // JWT VERIFY
+    // -------------------------
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "jwt expired" });
+      }
+      return res.status(401).json({ message: "Invalid token" });
+    }
 
-    // ⭐ IMPORTANT FIX: Always send only the user ID
     req.user = {
-      id: decoded.id || decoded._id,   // <-- Jo available ho use karo
-      email: decoded.email
+      id: decoded.id,
+      email: decoded.email,
     };
 
     next();
   } catch (error) {
     console.log(error);
-    return res.status(401).json({ message: "Token invalid or expired" });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 };
